@@ -30,18 +30,88 @@ def total_arch(folder,k):
 
 
 def borraraux():
-    if(os.path.exists("r.jpg")):
-        os.remove("r.jpg")          
-
+    if(os.path.exists("a.jpg")):
+        try: 
+            os.remove("a.jpg")          
+        except ValueError:    
+            pass
     if(os.path.exists("0.jpg")):
-        os.remove("0.jpg") 
-        if(os.path.exists("1.jpg")):
-            os.remove("1.jpg")  
-            if(os.path.exists("2.jpg")):
-                os.remove("2.jpg") 
-                if(os.path.exists("3.jpg")):
-                    os.remove("3.jpg")
-                    if(os.path.exists("4.jpg")):
-                        os,remove("4.jpg")
+        try:
+            os.remove("0.jpg") 
+        except ValueError:    
+            pass
+    if(os.path.exists("1.jpg")):
+        try:
+            os.remove("1.jpg")
+        except ValueError:    
+            pass  
+    if(os.path.exists("2.jpg")):
+        try:
+            os.remove("2.jpg") 
+        except ValueError:    
+            pass
+    if(os.path.exists("3.jpg")):
+        try:
+            os.remove("3.jpg")
+        except ValueError:    
+            pass
+    if(os.path.exists("3.jpg")):
+        try:
+            os.remove("3.jpg")
+        except ValueError:    
+            pass
+    if(os.path.exists("4.jpg")):
+        try:
+            os.remove("4.jpg")
+        except ValueError:    
+            pass
+    if(os.path.exists("5.jpg")):
+        try:
+            os.remove("5.jpg")
+        except ValueError:    
+            pass     
 
-#print(total_arch("segmentada/","6ewy6.jpg"))
+def borraraux2():
+    if(os.path.exists("0.jpg")):
+        try:
+            os.remove("0.jpg") 
+        except ValueError:    
+            pass
+    if(os.path.exists("1.jpg")):
+        try:
+            os.remove("1.jpg")
+        except ValueError:    
+            pass  
+    if(os.path.exists("2.jpg")):
+        try:
+            os.remove("2.jpg") 
+        except ValueError:    
+            pass
+    if(os.path.exists("3.jpg")):
+        try:
+            os.remove("3.jpg")
+        except ValueError:    
+            pass
+    if(os.path.exists("3.jpg")):
+        try:
+            os.remove("3.jpg")
+        except ValueError:    
+            pass
+    if(os.path.exists("4.jpg")):
+        try:
+            os.remove("4.jpg")
+        except ValueError:    
+            pass
+    if(os.path.exists("5.jpg")):
+        try:
+            os.remove("5.jpg")
+        except ValueError:    
+            pass        
+
+
+def borrarauxexp(path):
+    if(os.path.exists(path)):
+        try: 
+            os.remove(path)        
+        except ValueError:    
+            pass

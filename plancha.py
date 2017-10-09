@@ -221,7 +221,7 @@ def thinning():
             done = True
     cv2.imwrite("a.jpg" ,skel)
 
-def segmentacion(imagen,separador,nsegmentos,lseg):
+def segmentacion(imagen,separador,nsegmentos,lseg,mintotpix):
     his=pixels_total_horizontal(imagen)
     print(his)
     w, h = imagen.size
@@ -252,7 +252,7 @@ def segmentacion(imagen,separador,nsegmentos,lseg):
         if foundletter==True:
             im = imagen.crop((n1, 0, n2, h))
             print(conteo_pixels_blanco(im))
-            if conteo_pixels_blanco(im)>90:
+            if conteo_pixels_blanco(im)>mintotpix:
                 u=u+1
                 print(u)
                 if u==nsegmentos:
@@ -261,6 +261,7 @@ def segmentacion(imagen,separador,nsegmentos,lseg):
                     im.close()
                     break
                 elif u<nsegmentos:
+                    leer.borrarauxexp(str(u)+"jpg")
                     im.save(str(u)+".jpg")
                     im.close()
                     p=n1
@@ -276,6 +277,7 @@ def segmentacion(imagen,separador,nsegmentos,lseg):
 
 
 def segmentacion_thin(imagen1,imagen2,separador,nsegmentos,lseg):
+    leer.borraraux2()
     his=pixels_total_horizontal(imagen2)
     print(his)
     w, h = imagen2.size
@@ -319,6 +321,7 @@ def segmentacion_thin(imagen1,imagen2,separador,nsegmentos,lseg):
         im1 = imagen1.crop((p, 0, w, h))
         im1.save(str(u)+".jpg")
         im1.close()
+    print(u)
     return u
 
 
@@ -396,43 +399,71 @@ def quitar_linea(imagen,L):
     return outps
 
 
-def segmentar(minpix,nseg,Lminseg):
+def segmentar(minpix,nseg,Lminseg,k,mintotpix):
+    leer.borraraux()
     c=leer.total_arch("C:/Users/Antonio/Desktop/ia.trabajo/segmentada",k)
-    leer.borraraux() 
-    if n<5 and n>0:
-        for i in range(c):
+    print(c)
+    if c<5:
+        for i in range(c):     
             im1=Image.open("segmentada/"+str(i+1)+"."+str(k))
-            m=segmentacion(im1,minpix,nseg,Lminseg)
+            m=segmentacion(im1,minpix,nseg,Lminseg,mintotpix)
             im1.close()
             print(m,n,c)
-            if m>1:            
+            if m>1  :            
                 for r in range(c,i+1,-1):
                     print(r)
                     os.rename("segmentada/"+str(r)+"."+str(k), "segmentada/"+str(r+m-1)+"."+str(k))
                     
                 os.remove("segmentada/"+str(i+1)+"."+str(k))
                 for s in range(m): 
-                     os.rename(str(s+1)+".jpg", "segmentada/"+str(i+1+s)+"."+str(k))
+                    os.rename(str(s+1)+".jpg", "segmentada/"+str(i+1+s)+"."+str(k))
                 break
-        print(m,n,c)
-
-
-def segmentarthin(minpix,nseg,Lminseg):
-    c=leer.total_arch("segmentada/",k)
     leer.borraraux()
-    for i in range(c):
+
+def segmentarforzado(k):
+    c=leer.total_arch("C:/Users/Antonio/Desktop/ia.trabajo/segmentada",k)
+    print(c)
+    Lmax=0
+    p=0
+    if c<5:
+        for i in range(c):
+            im1=Image.open("segmentada/"+str(i+1)+"."+str(k))
+            ancho, alt=im1.size
+            im1.close()
+            if ancho>Lmax:
+                Lmax=ancho
+                p=i+1
+    im1=Image.open("segmentada/"+str(p)+"."+str(k))
+    his=pixels_total_horizontal(im1)
+    minpix=100
+    for i in range(int(round(Lmax/4.0,0)),int(3.0*round(Lmax/4.0,0))):
+        if his[i]<minpix:
+            minpix=his[i]
+    print(minpix,Lmax,p)
+
+
+
+def segmentarthin(minpix,nseg,Lminseg,k):
+    c=leer.total_arch("segmentada/",k)
+    print(c)
+    if c<5:
+        for i in range(c):
+            leer.borraraux()
             im1=Image.open("segmentada/"+str(i+1)+"."+str(k))
             im1.save("a.jpg")
             dilation(2)
             M=Image.open("a.jpg")
             N=binarizacion(M, 90)
+            M.close()
             N.save("a.jpg")
             thinning()
             dilation(2)
+            N.close()
             P=Image.open("a.jpg")
             Q=binarizacion(P, 90)
             m=segmentacion_thin(im1,Q,minpix,nseg,Lminseg)
             P.close()
+            im1.close()
             if m>1:            
                 for r in range(c,i+1,-1):
                     print(r)
@@ -442,7 +473,7 @@ def segmentarthin(minpix,nseg,Lminseg):
                 for s in range(m): 
                      os.rename(str(s+1)+".jpg", "segmentada/"+str(i+1+s)+"."+str(k))
                 break 
-            print(m,n,c)
+    leer.borraraux()
 
 """              
 ruta=("C:/Users/Antonio/Desktop/ia.trabajo/prueba.jpg")
@@ -493,6 +524,7 @@ n=segmentacion_thin(im6,Z,0,5,50)
 
 for k in leer.listdir_recurd([],'C:/Users/Antonio/Desktop/ia.trabajo/img','C:/Users/Antonio/Desktop/ia.trabajo/img', []):
     print(k)
+    leer.borraraux()
     I = Image.open("img/"+k)
 
     #convertir a gris
@@ -532,17 +564,26 @@ for k in leer.listdir_recurd([],'C:/Users/Antonio/Desktop/ia.trabajo/img','C:/Us
     out.save("invertida/"+k)
     
     #corte
-    Ct=corte(out,0,0)
+    Ct=corte(out,2,2)
     Ct.save("cortada/"+k)
-
-    # segmentacion
-    n=segmentacion(Ct,0,5,35)
+    Ct.save("a.jpg")
+    dilation(2)
+    M=Image.open("a.jpg")
+    N=binarizacion(M, 90)
+    N.save("a.jpg")
+    thinning()
+    dilation(2)
+    N.close()
+    M.close()
+    P=Image.open("a.jpg")
+    Q=binarizacion(P, 90)
+    n=segmentacion_thin(Ct,Q,0,5,30)
+    P.close()    
     print(n)
     for i in range(n):
         if os.path.exists(str(i+1)+".jpg"):
             L=Image.open(str(i+1)+".jpg")
             L.save("segmentada/"+str(i+1)+"."+str(k))
-
 
     n=0
     m=0
@@ -555,43 +596,48 @@ for k in leer.listdir_recurd([],'C:/Users/Antonio/Desktop/ia.trabajo/img','C:/Us
                 c=i+1
             n=n+1
         else:
-            R.close()
+            R.close()   
             break
+    
+    print(k)
 
-    leer.borraraux()
     if n<5 and n>0:
         print(m,n,c)        
         for i in range(n):
+            leer.borraraux()
             im1=Image.open("segmentada/"+str(i+1)+"."+str(k))
-            m=segmentacion(im1,0,6-n,35)
+            m=segmentacion(im1,0,6-n,27,90)
             print(m,n,c)
         if m>1:            
-            for i in range(n):
-                if n-i==c:
-                    for j in range(m):
-                        F=Image.open(str(j+1)+".jpg")
-                        F.save("segmentada/"+str(c+j)+"."+str(k))
-                elif n-i>c:
-                    os.rename(str(n-i), "segmentada/"+str(n-i+m-1)+"."+str(k))
+            for r in range(c,i+1,-1):
+                print(r)
+                os.rename("segmentada/"+str(r)+"."+str(k), "segmentada/"+str(r+m-1)+"."+str(k))
 
-    segmentar(0,5-n,30)               
-    segmentar(0,5-n,24)
-    segmentar(0,5-n,20)
-    segmentarthin(0,5-c,30)
-    segmentarthin(0,5-c,25)
-    segmentar(1,5-c,25)
-    segmentar(1,5-c,20)
-    segmentarthin(1,5-c,30)
-    segmentar(2,5-c,25)
-    segmentar(2,5-c,20)
-    segmentarthin(1,5-c,30)
-    
+            os.remove("segmentada/"+str(i+1)+"."+str(k))
+            for s in range(m): 
+                os.rename(str(s+1)+".jpg", "segmentada/"+str(i+1+s)+"."+str(k))
+            
 
 
+    segmentar(0,6-n,23,k,80)
+    segmentar(1,6-c,23,k,85)
+    segmentar(0,6-n,20,k,85)
+    segmentarthin(0,6-c,22,k)
 
+    segmentar(1,6-c,22,k,85)
+    segmentarthin(1,6-c,25,k)
+    segmentarthin(2,5-c,20,k)
 
+    segmentar(2,6-c,25,k,85)
+    segmentarthin(2,6-c,20,k)
+    segmentar(2,6-c,20,k,70)
+    segmentar(3,6-c,20,k,80)
+    segmentarthin(3,6-c,20,k)
+    segmentar(3,6-c,20,k,70)
+    segmentar(5,6-c,20,k,70)
+    segmentar(6,6-c,20,k,70)
+    #segmentarforzado(k)
 """
-
     n=0
     m=0
               
