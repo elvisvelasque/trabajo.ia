@@ -111,6 +111,7 @@ def borraraux2():
 
 def borrarauxexp(path):
     if(os.path.exists(path)):
+        print(path)
         try: 
             os.remove(path)        
         except ValueError:    
