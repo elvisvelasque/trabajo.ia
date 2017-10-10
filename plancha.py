@@ -322,6 +322,7 @@ def segmentacion_thin(imagen1,imagen2,separador,nsegmentos,lseg):
         im1.save(str(u)+".jpg")
         im1.close()
     print(u)
+
     return u
 
 
@@ -433,13 +434,30 @@ def segmentarforzado(k):
             if ancho>Lmax:
                 Lmax=ancho
                 p=i+1
-    im1=Image.open("segmentada/"+str(p)+"."+str(k))
-    his=pixels_total_horizontal(im1)
-    minpix=100
-    for i in range(int(round(Lmax/4.0,0)),int(3.0*round(Lmax/4.0,0))):
-        if his[i]<minpix:
-            minpix=his[i]
-    print(minpix,Lmax,p)
+        im1=Image.open("segmentada/"+str(p)+"."+str(k))
+        his=pixels_total_horizontal(im1)
+        minpix=100
+        for i in range(int(round(Lmax/3.0,0))+1,int(2.0*round(Lmax/3.0,0))):
+            if his[i]<minpix:
+                minpix=his[i]
+        print(minpix,Lmax,p,"sd")
+        im1.close()
+           
+            
+        im1=Image.open("segmentada/"+str(p)+"."+str(k))
+        m=segmentacion(im1,minpix,2,round(Lmax/3),0)
+        im1.close()
+        print(m,n,c)
+        if m==2  :            
+            for r in range(c,p,-1):
+                print(r)
+                os.rename("segmentada/"+str(r)+"."+str(k), "segmentada/"+str(r+1)+"."+str(k))
+                   
+            os.remove("segmentada/"+str(p)+"."+str(k))
+            for s in range(m): 
+                os.rename(str(s+1)+".jpg", "segmentada/"+str(p+s)+"."+str(k))
+        
+    leer.borraraux()        
 
 
 
@@ -455,6 +473,7 @@ def segmentarthin(minpix,nseg,Lminseg,k):
             M=Image.open("a.jpg")
             N=binarizacion(M, 90)
             M.close()
+            leer.borrarauxexp("a.jpg")
             N.save("a.jpg")
             thinning()
             dilation(2)
@@ -463,6 +482,7 @@ def segmentarthin(minpix,nseg,Lminseg,k):
             Q=binarizacion(P, 90)
             m=segmentacion_thin(im1,Q,minpix,nseg,Lminseg)
             P.close()
+            Q.close()
             im1.close()
             if m>1:            
                 for r in range(c,i+1,-1):
@@ -473,7 +493,7 @@ def segmentarthin(minpix,nseg,Lminseg,k):
                 for s in range(m): 
                      os.rename(str(s+1)+".jpg", "segmentada/"+str(i+1+s)+"."+str(k))
                 break 
-    leer.borraraux()
+    leer.borraraux2()
 
 """              
 ruta=("C:/Users/Antonio/Desktop/ia.trabajo/prueba.jpg")
@@ -584,6 +604,7 @@ for k in leer.listdir_recurd([],'C:/Users/Antonio/Desktop/ia.trabajo/img','C:/Us
         if os.path.exists(str(i+1)+".jpg"):
             L=Image.open(str(i+1)+".jpg")
             L.save("segmentada/"+str(i+1)+"."+str(k))
+            L.close()
 
     n=0
     m=0
@@ -591,12 +612,13 @@ for k in leer.listdir_recurd([],'C:/Users/Antonio/Desktop/ia.trabajo/img','C:/Us
         if os.path.exists("segmentada/"+str(i+1)+"."+str(k)):
             R=Image.open("segmentada/"+str(i+1)+"."+str(k))
             w, h = R.size
+            R.close()  
             if w>m:
                 m=w
                 c=i+1
             n=n+1
         else:
-            R.close()   
+             
             break
     
     print(k)
@@ -607,6 +629,7 @@ for k in leer.listdir_recurd([],'C:/Users/Antonio/Desktop/ia.trabajo/img','C:/Us
             leer.borraraux()
             im1=Image.open("segmentada/"+str(i+1)+"."+str(k))
             m=segmentacion(im1,0,6-n,27,90)
+            im1.close()
             print(m,n,c)
         if m>1:            
             for r in range(c,i+1,-1):
@@ -627,7 +650,6 @@ for k in leer.listdir_recurd([],'C:/Users/Antonio/Desktop/ia.trabajo/img','C:/Us
     segmentar(1,6-c,22,k,85)
     segmentarthin(1,6-c,25,k)
     segmentarthin(2,5-c,20,k)
-
     segmentar(2,6-c,25,k,85)
     segmentarthin(2,6-c,20,k)
     segmentar(2,6-c,20,k,70)
@@ -636,7 +658,17 @@ for k in leer.listdir_recurd([],'C:/Users/Antonio/Desktop/ia.trabajo/img','C:/Us
     segmentar(3,6-c,20,k,70)
     segmentar(5,6-c,20,k,70)
     segmentar(6,6-c,20,k,70)
-    #segmentarforzado(k)
+    segmentarforzado(k)
+
+    for i in range(5):
+        letra=k[i]
+        os.rename("segmentada/"+str(i+1)+"."+str(k), "alfabeto/"+str(letra)+"/"+str(letra)+"."+str(i)+"."+str(k))
+
+    os.remove("img/"+str(k))
+
+
+
+
 """
     n=0
     m=0
@@ -656,7 +688,7 @@ for k in leer.listdir_recurd([],'C:/Users/Antonio/Desktop/ia.trabajo/img','C:/Us
         F.save("a.jpg")
         dilation(2)
         M=Image.open("a.jpg")
-        N=binarizacion(M, 90)
+   N=binarizacion(M, 90)
         N.save("a.jpg")
         thinning()
         dilation(2)
